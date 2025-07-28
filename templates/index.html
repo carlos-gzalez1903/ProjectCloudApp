@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <a href="{{ url_for('add_task') }}" class="btn">Agregar Tarea</a>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Descripción</th>
+                <th>Fecha de Creación</th>
+                <th>Fecha de Resolución</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>{{ task.description }}</td>
+                <td>{{ task.date_added }}</td>
+                <td>{{ task.date_resolved if task.date_resolved else 'Pendiente' }}</td>
+                <td>{{ task.status }}</td>
+                <td>
+                    {% if task.status == 'Pendiente' %}
+                    <a href="{{ url_for('complete_task', task_id=task.id) }}" class="btn complete">Completar</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
