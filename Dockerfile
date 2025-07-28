@@ -2,7 +2,7 @@
 FROM python:3.9-slim
 
 # Directorio de trabajo
-WORKDIR /app
+WORKDIR ./
 
 # Copiar requirements e instalar dependencias
 COPY requirements.txt .
