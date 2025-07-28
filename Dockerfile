@@ -1,18 +1,16 @@
-# Usa una imagen oficial de Python
 FROM python:3.9-slim
 
-# Directorio de trabajo
-WORKDIR ./
+WORKDIR /app
 
-# Copiar requirements e instalar dependencias
+# Instalar dependencias primero (para cache)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto de archivos
+# Copiar el resto
 COPY . .
 
-# Puerto expuesto (Fly usa 8080 por defecto)
+# Puerto para Fly.io
 EXPOSE 8080
 
-# Comando para ejecutar la app
+# Comando de inicio (¡usa el nombre correcto de tu módulo!)
 CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
