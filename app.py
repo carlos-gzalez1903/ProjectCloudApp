@@ -20,10 +20,10 @@ tasks = [
         'status': 'Completada'
     }
 ]
-@app.route('/api/tasks', methods=['GET', 'POST'])  # 👈 Acepta ambos métodos
+@app.route('/api/tasks', methods=['GET', 'POST'])  
 def handle_tasks():
     if request.method == 'GET':
-        return jsonify({"tasks": tasks})  # Devuelve todas las tareas
+        return jsonify({"tasks": tasks})  
     elif request.method == 'POST':
         # Lógica para crear tarea
         return jsonify({"message": "Tarea creada"}), 201
