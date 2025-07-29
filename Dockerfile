@@ -2,15 +2,10 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Instalar dependencias primero (para cache)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto
 COPY . .
 
-# Puerto para Fly.io
-EXPOSE 8080
-
-# Comando de inicio (¡usa el nombre correcto de tu módulo!)
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-8080} app:app"]
+# Usa PORT de las variables de entorno o 8080 por defecto
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-8080} --access-logfile - --error-logfile - app:app"]
