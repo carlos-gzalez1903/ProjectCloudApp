@@ -20,15 +20,44 @@ tasks = [
         'status': 'Completada'
     }
 ]
-@app.route('/api/tasks', methods=['GET', 'POST'])  
-def handle_tasks():
-    if request.method == 'GET':
-        return jsonify({"tasks": tasks})  
-    elif request.method == 'POST':
-        # Lógica para crear tarea
-        return jsonify({"message": "Tarea creada"}), 201
 
-# GET /api/tasks/<id>
+# Ruta principal que renderiza la interfaz web
+@app.route('/')
+def index():
+    return render_template('index.html', tasks=tasks)
+
+# Ruta para agregar tareas desde el formulario web
+@app.route('/add', methods=['POST'])
+def add_task():
+    description = request.form.get('description')
+    if not description:
+        return redirect(url_for('index'))
+    
+    new_task = {
+        'id': len(tasks) + 1,
+        'description': description,
+        'date_added': datetime.now().strftime('%Y-%m-%d'),
+        'date_resolved': None,
+        'status': 'Pendiente'
+    }
+    tasks.append(new_task)
+    return redirect(url_for('index'))
+
+# Ruta para marcar tarea como completada
+@app.route('/complete/<int:task_id>')
+def complete_task(task_id):
+    for task in tasks:
+        if task['id'] == task_id:
+            task['status'] = 'Completada'
+            task['date_resolved'] = datetime.now().strftime('%Y-%m-%d')
+            break
+    return redirect(url_for('index'))
+
+# API REST
+@app.route('/api/tasks', methods=['GET'])
+def get_all_tasks():
+    return jsonify({"tasks": tasks})
+
 @app.route('/api/tasks/<int:id>', methods=['GET'])
 def get_task(id):
     task = next((t for t in tasks if t['id'] == id), None)
@@ -36,7 +65,6 @@ def get_task(id):
         return jsonify({"error": "Tarea no encontrada"}), 404
     return jsonify(task)
 
-# POST /api/tasks
 @app.route('/api/tasks', methods=['POST'])
 def create_task():
     if not request.json or 'description' not in request.json:
@@ -45,30 +73,31 @@ def create_task():
     new_task = {
         "id": len(tasks) + 1,
         "description": request.json['description'],
-        "status": "pending",
-        "created_at": datetime.now().strftime('%Y-%m-%d')
+        "status": "Pendiente",
+        "date_added": datetime.now().strftime('%Y-%m-%d'),
+        "date_resolved": None
     }
     tasks.append(new_task)
-    return jsonify({"message": "Tarea creada", "id": new_task['id']}), 201
+    return jsonify({"message": "Tarea creada", "task": new_task}), 201
 
-# PUT /api/tasks/<id>
 @app.route('/api/tasks/<int:id>', methods=['PUT'])
 def update_task(id):
     task = next((t for t in tasks if t['id'] == id), None)
     if not task:
         return jsonify({"error": "Tarea no encontrada"}), 404
     
-    task['description'] = request.json.get('description', task['description'])
-    task['status'] = request.json.get('status', task['status'])
-    return jsonify({"message": f"Tarea {id} actualizada"})
+    data = request.json
+    task['description'] = data.get('description', task['description'])
+    task['status'] = data.get('status', task['status'])
+    if task['status'] == 'Completada' and not task['date_resolved']:
+        task['date_resolved'] = datetime.now().strftime('%Y-%m-%d')
+    return jsonify({"message": f"Tarea {id} actualizada", "task": task})
 
-# DELETE /api/tasks/<id>
 @app.route('/api/tasks/<int:id>', methods=['DELETE'])
 def delete_task(id):
     global tasks
     tasks = [t for t in tasks if t['id'] != id]
     return jsonify({"message": f"Tarea {id} eliminada"})
-
 
 if __name__ == '__main__':
     app.run(debug=True)
